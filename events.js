@@ -15,11 +15,12 @@ EventEmitter.prototype.on = function(eventName,callback){ // 绑定事件
         this._events[eventName] = [callback]
     }
 }
-EventEmitter.prototype.emit = function(eventName){ // 触发事件
+// 此时emit时可能会传递多个参数,除了第一个外均为回调函数触发时需要传递的参数
+EventEmitter.prototype.emit = function(eventName,...args){ // 触发事件
     if(this._events[eventName]){
         // 如果有对应关系
         this._events[eventName].forEach(callback => {
-            callback();
+            callback.apply(this,args); // 在执行回调时将参数传入,保证this依然是当前实例
         });
     }
 }
