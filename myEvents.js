@@ -7,7 +7,8 @@ let buyPack = (who) => {
 let buyCar = (who) => {
     console.log(who+'买车');
 }
-man.on('有钱了', buyPack);
+man.once('有钱了', buyPack); // 只绑定一次
 man.on('有钱了', buyCar);
-man.removeListener('有钱了',buyCar);
-man.emit('有钱了','给心仪的女孩');
+man.removeListener('有钱了',buyPack);
+man.emit('有钱了','给心仪的女孩'); // 此时代码执行后，对应的buyPack会被移除掉
+man.emit('有钱了','给心仪的女孩'); // buyPack动作将不会再次执行

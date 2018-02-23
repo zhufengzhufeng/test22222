@@ -27,8 +27,19 @@ EventEmitter.prototype.emit = function(eventName,...args){ // 触发事件
 EventEmitter.prototype.removeListener = function(eventName,callback){
     if(this._events[eventName]){ // 如果绑定过,我在尝试着去删除
         // filter返回false就将当前项从数组中删除，并且返回一个新数组
-        this._events[eventName] = this._events[eventName].filter(fn=>fn!==callback);
+        // 如果函数上的自定义属性和我们要删除的函数相等也将将这个函数删除
+        this._events[eventName] = this._events[eventName].filter(fn=>fn!==callback&&fn.listener!==callback);
     }
+}
+EventEmitter.prototype.once = function(eventName,callback){
+    function wrap(...args){ // wrap执行时会传入参数
+        callback.apply(this,args); // 将once绑定的函数执行
+        // 当wrap触发后移除wrap
+        this.removeListener(eventName,wrap);
+    }
+    wrap.listener = callback; // 这里要注意此时绑定的是wrap,防止删除时无法删除，增加自定义属性
+    this.on(eventName,wrap); // 这里增加了warp函数，目的是为了方便移除
+    
 }
 // 导出事件触发器类
 module.exports = EventEmitter; 
