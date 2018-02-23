@@ -7,19 +7,23 @@ EventEmitter.init = function(){
     this._events = Object.create(Object.create(null));
     this._maxListeners = undefined; // 默认实例上没有最大监听数
 }
-EventEmitter.prototype.on = function(eventName,callback){ // 绑定事件
+EventEmitter.prototype.on = function(eventName,callback,bool){ // 绑定事件
     if(eventName !== 'newListener'){ // 如果监听的是newListener
         // 用户如果监听了newListener事件，我们还要触发newListener事件执行
         this._events.newListener&&this._events.newListener.forEach(fn=>fn(eventName,callback))
     }
     // 调用on方法就是维护内部的_events变量,使其生成一对多的关系
     if(this._events[eventName]){ // 如果存在这样一个关系只需在增加一项即可
-        this._events[eventName].push(callback);
+        if(!bool){
+            this._events[eventName].unshift(callback);
+        }else{
+            this._events[eventName].push(callback);
+        }
     }else{
         // 增加关系
         this._events[eventName] = [callback]
     }
-    if(this._events[eventName].length === this.getMaxListeners()){
+    if(this._events[eventName]&&(this._events[eventName].length === this.getMaxListeners())){
         console.warn('Possible EventEmitter memory leak detected. ' +
         `${this._events[eventName].length} ${String(eventName)} listeners ` +
         'added. Use emitter.setMaxListeners() to ' +
@@ -65,6 +69,19 @@ EventEmitter.prototype.getMaxListeners = function(){
 }
 EventEmitter.prototype.listenerCount = function(eventName){
     return this._events[eventName].length
+}
+EventEmitter.prototype.eventNames = function(){
+    return Object.keys(this._events); // 将对象转化成数组
+}
+EventEmitter.prototype.removeAllListeners = function(type){
+    if(type){
+        delete this._events[type];
+    }else{
+        this._events = Object.create(null);
+    }
+}
+EventEmitter.prototype.prependListener = function(type,callback){
+    this.on(type,callback,false)
 }
 // 导出事件触发器类
 module.exports = EventEmitter; 
