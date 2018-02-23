@@ -23,5 +23,11 @@ EventEmitter.prototype.emit = function(eventName){ // 触发事件
         });
     }
 }
+EventEmitter.prototype.removeListener = function(eventName,callback){
+    if(this._events[eventName]){ // 如果绑定过,我在尝试着去删除
+        // filter返回false就将当前项从数组中删除，并且返回一个新数组
+        this._events[eventName] = this._events[eventName].filter(fn=>fn!==callback);
+    }
+}
 // 导出事件触发器类
 module.exports = EventEmitter; 

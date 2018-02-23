@@ -9,4 +9,5 @@ let buyCar = () => {
 }
 man.on('有钱了', buyPack);
 man.on('有钱了', buyCar);
+man.removeListener('有钱了',buyCar)
 man.emit('有钱了');
