@@ -7,6 +7,9 @@ let buyPack = (who) => {
 let buyCar = (who) => {
     console.log(who+'买车');
 }
+man.on('newListener',function(eventName,callback){
+    console.log(eventName,callback)
+})
 man.once('有钱了', buyPack); // 只绑定一次
 man.on('有钱了', buyCar);
 man.removeListener('有钱了',buyPack);

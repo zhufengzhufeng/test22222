@@ -7,9 +7,13 @@ EventEmitter.init = function(){
     this._events = Object.create(Object.create(null));
 }
 EventEmitter.prototype.on = function(eventName,callback){ // 绑定事件
+    if(eventName !== 'newListener'){ // 如果监听的是newListener
+        // 用户如果监听了newListener事件，我们还要触发newListener事件执行
+        return this._events.newListener&&this._events.newListener.forEach(fn=>fn(eventName,callback))
+    }
     // 调用on方法就是维护内部的_events变量,使其生成一对多的关系
     if(this._events[eventName]){ // 如果存在这样一个关系只需在增加一项即可
-        this._events[eventName].push(callback)
+        this._events[eventName].push(callback);
     }else{
         // 增加关系
         this._events[eventName] = [callback]
