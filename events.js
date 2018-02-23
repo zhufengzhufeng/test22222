@@ -5,11 +5,12 @@ EventEmitter.init = function(){
     // 为了存放一对多的对应关系 例如后期 
     // {'有钱',[buyPack,buyCar],'没钱':[hungry]}
     this._events = Object.create(Object.create(null));
+    this._maxListeners = undefined; // 默认实例上没有最大监听数
 }
 EventEmitter.prototype.on = function(eventName,callback){ // 绑定事件
     if(eventName !== 'newListener'){ // 如果监听的是newListener
         // 用户如果监听了newListener事件，我们还要触发newListener事件执行
-        return this._events.newListener&&this._events.newListener.forEach(fn=>fn(eventName,callback))
+        this._events.newListener&&this._events.newListener.forEach(fn=>fn(eventName,callback))
     }
     // 调用on方法就是维护内部的_events变量,使其生成一对多的关系
     if(this._events[eventName]){ // 如果存在这样一个关系只需在增加一项即可
@@ -17,6 +18,12 @@ EventEmitter.prototype.on = function(eventName,callback){ // 绑定事件
     }else{
         // 增加关系
         this._events[eventName] = [callback]
+    }
+    if(this._events[eventName].length === this.getMaxListeners()){
+        console.warn('Possible EventEmitter memory leak detected. ' +
+        `${this._events[eventName].length} ${String(eventName)} listeners ` +
+        'added. Use emitter.setMaxListeners() to ' +
+        'increase limit')
     }
 }
 // 此时emit时可能会传递多个参数,除了第一个外均为回调函数触发时需要传递的参数
@@ -44,6 +51,20 @@ EventEmitter.prototype.once = function(eventName,callback){
     wrap.listener = callback; // 这里要注意此时绑定的是wrap,防止删除时无法删除，增加自定义属性
     this.on(eventName,wrap); // 这里增加了warp函数，目的是为了方便移除
     
+}
+// 默认监听数量是10
+EventEmitter.defaultMaxListeners = 10
+EventEmitter.prototype.setMaxListeners = function(count){
+    this._maxListeners = count;
+}
+EventEmitter.prototype.getMaxListeners = function(){
+    if(!this._maxListeners){ // 如果没设置过那就是10个
+        return EventEmitter.defaultMaxListeners;
+    }
+    return this._maxListeners
+}
+EventEmitter.prototype.listenerCount = function(eventName){
+    return this._events[eventName].length
 }
 // 导出事件触发器类
 module.exports = EventEmitter; 
